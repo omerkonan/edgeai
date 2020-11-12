@@ -2,16 +2,16 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 import tensorflow as tf
 import numpy as np
-
+import os 
 class Data:
-  def __init__(self, datapath, headers, seperator, test_rate=0.2, val_rate=0.2):
+  def __init__(self, datapath, headers, seperator, label_list, test_rate=0.2, val_rate=0.2):
     self.datapath = datapath
     self.savepath = "./"
     self.data_type = self.findDataPath()
     self.seperator = seperator
     self.headers = headers
+    self.label_list = label_list
     self.df = self.readData()
-    self.labels = self.df.iloc[:,:1] # set label column. now it is first column. to set as last column: [:,-1:]  
     self.test_rate = test_rate
     self.val_rate = val_rate/(1-test_rate)
     self.x_train, self.y_train, self.x_test, self.y_test,\
@@ -30,6 +30,14 @@ class Data:
       df = pd.read_csv(self.datapath)
     else: 
       return(print('Error: Datatype error - Wrong DataType input'))
+  
+    df = self.labelencode(df)
+
+    return df
+
+  def labelencode(self,df):
+    for i in range(len(self.label_list)):
+      df = df.replace({'label':self.label_list[i]},i)
     return df
 
   def getDataInfo(self):
@@ -70,9 +78,10 @@ class Data:
       df.to_csv(fixed_df_path, header=None, index=None, sep=sep)
 
   def splitData(self):
-    x, x_test, y, y_test = train_test_split(self.df, self.labels,\
+    x, x_test, y, y_test = train_test_split(self.df[self.df.columns[-3:]], self.df.iloc[:,0],\
                                             test_size=self.test_rate, train_size=(1-self.test_rate))
     x_train, x_val, y_train, y_val = train_test_split(x, y, \
                                             test_size = self.val_rate, train_size =(1-self.val_rate))
+    
     return x_train, y_train, x_test, y_test, x_val, y_val
 
