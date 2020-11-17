@@ -47,7 +47,7 @@ class Data:
     return self.df.dropna(inplace=False)
 
   def addLabel(self, label):
-    labels = self.df['label'] = label
+    self.df['label'] = label
     return self.df
   
   
@@ -68,14 +68,7 @@ class Data:
       self.df.to_csv(saving_path, header=None, index=None, \
           sep=self.seperator)
   
-  def save_df(self, df, fixed_df_path, sep = ','):
-    if os.path.exists(fixed_df_path):
-    # os.remove(fixed_df_path)
-    # Normally this command check file is exist. If it exists, df.to_csv() working as append command.
-    # But it occurs premission denied in another drive.
-      print("Please delete the fixed dataset and create again")
-    else: 
-      df.to_csv(fixed_df_path, header=None, index=None, sep=sep)
+
 
   def splitData(self):
     x, x_test, y, y_test = train_test_split(self.df[self.df.columns[-3:]], self.df.iloc[:,0],\
@@ -85,3 +78,17 @@ class Data:
     
     return x_train, y_train, x_test, y_test, x_val, y_val
 
+  def convertConv1D(self):
+    """
+    Keras conv1d layer input shape should be 3d. This function adjust data dimension for con1d
+    """
+    x_train = np.expand_dims(self.x_train, axis=2)
+    y_train = np.expand_dims(self.y_train, axis=1)
+
+    x_test = np.expand_dims(self.x_test, axis=2)
+    y_test = np.expand_dims(self.y_test, axis=1)
+    
+    x_val = np.expand_dims(self.x_val, axis=2)
+    y_val = np.expand_dims(self.y_val, axis=1)
+
+    return x_train, y_train, x_test, y_test, x_val, y_val
