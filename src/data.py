@@ -4,9 +4,30 @@ import tensorflow as tf
 import numpy as np
 import os 
 class Data:
-  def __init__(self, datapath, headers, seperator, label_list, test_rate=0.2, val_rate=0.2):
+  """ 
+  Data class has clearing process for data and has spliting process as test,train, validation  according to class parameters
+  
+  Init values and data parameters:
+
+  datapath: the path where the data is stored
+  savepath: the path where the data want to be stored
+  seperator: seperator character for the txt file
+  label_list: The list that shows how many different labels
+  df: Pandas dataframe for the data
+  test_rate: ratio of test data to total data
+  val_rate: ratio of validation data to total data
+  x_train: training features data
+  y_tarin: target train data(Labels)
+  x_test: test features data
+  y_test: target test data(Labels)
+  x_val: validation features data
+  y_val: target validation data(Labels)
+  
+  """
+  
+  def __init__(self, datapath, headers, seperator, label_list, savepath="./", test_rate=0.2, val_rate=0.2):
     self.datapath = datapath
-    self.savepath = "./"
+    self.savepath = savepath
     self.data_type = self.findDataPath()
     self.seperator = seperator
     self.headers = headers
@@ -27,7 +48,7 @@ class Data:
       df = pd.read_csv(self.datapath, sep=self.seperator, header= None, engine='c', error_bad_lines=False, warn_bad_lines=False)
       df.columns = self.headers
     elif (self.data_type == 'csv'):
-      df = pd.read_csv(self.datapath)
+      df = pd.read_csv(self.datapath,engine='c',error_bad_lines=False, warn_bad_lines=False)
     else: 
       return(print('Error: Datatype error - Wrong DataType input'))
   

@@ -47,17 +47,18 @@ def main():
 													monitor='loss', save_best_only=False, period=10)
 
 	#model = convNetwork()
-	model = tf.keras.models.load_model("../models/weights.100-0.35.hdf5")
-	#model.compile(optimizer ='adam', loss="sparse_categorical_crossentropy", metrics=['accuracy'])
+	"""
 	model.summary()
-
-	#model.fit(cnn_x_train,cnn_y_train,epochs=100, callbacks=[checkpoints])
+	model.compile(optimizer ='adam', loss="sparse_categorical_crossentropy", metrics=['accuracy'])
+	model.fit(cnn_x_train,cnn_y_train,epochs=100, callbacks=[checkpoints])
 	print("validation")
-	#score = model.evaluate(cnn_x_val, cnn_y_val)
-	#print(f'Test loss: {score[0]} / Test accuracy: {score[1]}')
+	score = model.evaluate(cnn_x_val, cnn_y_val)
+	print(f'Test loss: {score[0]} / Test accuracy: {score[1]}')
+	model.save("../models./model.h5")
+	"""
+	model = tf.keras.models.load_model("../models/model.h5")
 	print("Test solutions:")
 	solutions = model.predict(cnn_x_test)
-	print(solutions.argmax)
 	print(solutions.argmax(axis=-1))
 	print("cnn_y_test:")
 	print(cnn_y_test)
