@@ -47,6 +47,7 @@ def main():
 													monitor='loss', save_best_only=False, period=10)
 
 	#model = convNetwork()
+	#model = deepNNetwork()
 	"""
 	model.summary()
 	model.compile(optimizer ='adam', loss="sparse_categorical_crossentropy", metrics=['accuracy'])
