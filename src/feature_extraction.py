@@ -30,7 +30,7 @@ def SMK(df_feature, windows_length):
     """
     Simple Moving Kurtosis
     """
-    
+
     df_SMK = pd.DataFrame()
     df_SMK[:,0] = df_feature[:,0].rolling(window=windows_length).Kurtosis()
     df_SMK[:,1] = df_feature[:,1].rolling(window=windows_length).Kurtosis()
@@ -98,7 +98,7 @@ def CMS(df_feature, windows_length):
 
 def EMA(df_feature, windows_length):
     """
-    Exponentiel Moving Average
+    Exponential Moving Average
     """
     df_EMA = pd.DataFrame(windows_length)
     df_EMA[:,0] = df_feature[:,0].ewm(span=windows_length, adjust=False).mean() 
@@ -109,7 +109,7 @@ def EMA(df_feature, windows_length):
 
 def EMV(df_feature, windows_length):
     """
-    Exponentiel Moving Average
+    Exponential Moving Varience
     """
     df_EMV = pd.DataFrame(windows_length)
     df_EMV[:,0] = df_feature[:,0].ewm(span=windows_length, adjust=False).var() 
@@ -120,7 +120,7 @@ def EMV(df_feature, windows_length):
 
 def EMK(df_feature, windows_length):
     """
-    Exponentiel Moving Kurtosis
+    Exponential Moving Kurtosis
     """
     df_EMK = pd.DataFrame(windows_length)
     df_EMK[:,0] = df_feature[:,0].ewm(span=windows_length, adjust=False).Kurtosis() 
@@ -131,7 +131,7 @@ def EMK(df_feature, windows_length):
 
 def EMS(df_feature, windows_length):
     """
-    Exponentiel Moving Skew
+    Exponential Moving Skew
     """
     df_EMS = pd.DataFrame(windows_length)
     df_EMS[:,0] = df_feature[:,0].ewm(span=windows_length, adjust=False).Skew() 
@@ -139,3 +139,4 @@ def EMS(df_feature, windows_length):
     df_EMS[:,2] = df_feature[:,2].ewm(span=windows_length, adjust=False).Skew()
 
     return df_EMS
+

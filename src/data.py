@@ -48,7 +48,7 @@ class Data:
       df = pd.read_csv(self.datapath, sep=self.seperator, header= None, engine='c', error_bad_lines=False, warn_bad_lines=False)
       df.columns = self.headers
     elif (self.data_type == 'csv'):
-      df = pd.read_csv(self.datapath,engine='c',error_bad_lines=False, warn_bad_lines=False)
+      df = pd.read_csv(self.datapath, engine='c',error_bad_lines=False, warn_bad_lines=False)
     else: 
       return(print('Error: Datatype error - Wrong DataType input'))
   
