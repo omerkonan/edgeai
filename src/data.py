@@ -25,7 +25,7 @@ class Data:
   
   """
   
-  def __init__(self, datapath, headers, seperator, label_list, savepath="./", test_rate=0.2, val_rate=0.2):
+  def __init__(self, datapath, headers, label_list, seperator=',', savepath="./", test_rate=0.2, val_rate=0.2):
     self.datapath = datapath
     self.savepath = savepath
     self.data_type = self.findDataPath()
@@ -49,6 +49,8 @@ class Data:
       df.columns = self.headers
     elif (self.data_type == 'csv'):
       df = pd.read_csv(self.datapath, engine='c',error_bad_lines=False, warn_bad_lines=False)
+    elif (self.data_type == 'json'):
+      df = pd.read_json(self.datapath, error_bad_lines=False, warn_bad_lines=False)
     else: 
       return(print('Error: Datatype error - Wrong DataType input'))
   

@@ -1,0 +1,34 @@
+limits:523:7:static constexpr signed char std::numeric_limits<signed char>::min()	4	static
+limits:526:7:static constexpr signed char std::numeric_limits<signed char>::max()	4	static
+limits:593:7:static constexpr unsigned char std::numeric_limits<unsigned char>::min()	4	static
+limits:596:7:static constexpr unsigned char std::numeric_limits<unsigned char>::max()	4	static
+limits:1137:7:static constexpr long int std::numeric_limits<long int>::min()	4	static
+limits:1140:7:static constexpr long int std::numeric_limits<long int>::max()	4	static
+gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	16	static
+test_utils.cc:47:14:TfLiteStatus tflite::testing::{anonymous}::AllocatePersistentBuffer(TfLiteContext*, size_t, void**)	24	static
+test_utils.cc:58:14:TfLiteStatus tflite::testing::{anonymous}::RequestScratchBufferInArena(TfLiteContext*, size_t, int*)	32	static
+test_utils.cc:82:7:void* tflite::testing::{anonymous}::GetScratchBuffer(TfLiteContext*, int)	16	static
+test_utils.cc:92:9:uint8_t tflite::testing::F2Q(float, float, float)	40	static
+test_utils.cc:105:8:int8_t tflite::testing::F2QS(float, float, float)	32	static
+test_utils.cc:109:9:int32_t tflite::testing::F2Q32(float, float)	32	static
+test_utils.cc:120:6:void tflite::testing::PopulateContext(TfLiteTensor*, int, tflite::ErrorReporter*, TfLiteContext*)	32	static
+initializer_list:75:7:constexpr const _E* std::initializer_list<_E>::begin() const [with _E = float]	16	static
+test_utils.cc:151:14:TfLiteTensor tflite::testing::CreateFloatTensor(std::initializer_list<float>, TfLiteIntArray*, const char*, bool)	32	static
+initializer_list:75:7:constexpr const _E* std::initializer_list<_E>::begin() const [with _E = bool]	16	static
+test_utils.cc:157:14:TfLiteTensor tflite::testing::CreateBoolTensor(std::initializer_list<bool>, TfLiteIntArray*, const char*, bool)	32	static
+test_utils.cc:163:14:TfLiteTensor tflite::testing::CreateQuantizedTensor(const uint8_t*, TfLiteIntArray*, const char*, float, float, bool)	40	static
+initializer_list:75:7:constexpr const _E* std::initializer_list<_E>::begin() const [with _E = unsigned char]	16	static
+test_utils.cc:180:14:TfLiteTensor tflite::testing::CreateQuantizedTensor(std::initializer_list<unsigned char>, TfLiteIntArray*, const char*, float, float, bool)	40	static
+test_utils.cc:186:14:TfLiteTensor tflite::testing::CreateQuantizedTensor(const int8_t*, TfLiteIntArray*, const char*, float, float, bool)	40	static
+initializer_list:75:7:constexpr const _E* std::initializer_list<_E>::begin() const [with _E = signed char]	16	static
+test_utils.cc:203:14:TfLiteTensor tflite::testing::CreateQuantizedTensor(std::initializer_list<signed char>, TfLiteIntArray*, const char*, float, float, bool)	40	static
+test_utils.cc:209:14:TfLiteTensor tflite::testing::CreateQuantizedTensor(float*, uint8_t*, TfLiteIntArray*, const char*, bool)	24	static
+test_utils.cc:226:14:TfLiteTensor tflite::testing::CreateQuantizedTensor(float*, int8_t*, TfLiteIntArray*, const char*, bool)	24	static
+test_utils.cc:243:14:TfLiteTensor tflite::testing::CreateQuantizedTensor(float*, int16_t*, TfLiteIntArray*, const char*, bool)	24	static
+test_utils.cc:260:14:TfLiteTensor tflite::testing::CreateQuantized32Tensor(const int32_t*, TfLiteIntArray*, const char*, float, bool)	32	static
+initializer_list:75:7:constexpr const _E* std::initializer_list<_E>::begin() const [with _E = long int]	16	static
+test_utils.cc:279:14:TfLiteTensor tflite::testing::CreateQuantized32Tensor(std::initializer_list<long int>, TfLiteIntArray*, const char*, float, bool)	40	static
+test_utils.h:62:12:int tflite::testing::ZeroPointFromMinMax(float, float) [with T = unsigned char]	32	static
+test_utils.h:55:14:float tflite::testing::ScaleFromMinMax(float, float) [with T = unsigned char]	32	static
+test_utils.h:55:14:float tflite::testing::ScaleFromMinMax(float, float) [with T = signed char]	32	static
+test_utils.h:62:12:int tflite::testing::ZeroPointFromMinMax(float, float) [with T = signed char]	32	static

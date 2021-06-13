@@ -1,142 +1,307 @@
 import pandas as pd
+import argparse
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
+import pandas as pd
+from sklearn.model_selection import train_test_split
+import numpy as np
+import os 
 
-def SMA(df_feature, windows_length):
+class Data:
+  """ 
+  Data class has clearing process for data and has spliting process as test,train, validation  according to class parameters
+  
+  Init values and data parameters:
+
+  datapath: the path where the data is stored
+  savepath: the path where the data want to be stored
+  seperator: seperator character for the txt file
+  label_list: The list that shows how many different labels
+  df: Pandas dataframe for the data
+  test_rate: ratio of test data to total data
+  val_rate: ratio of validation data to total data
+  x_train: training features data
+  y_tarin: target train data(Labels)
+  x_test: test features data
+  y_test: target test data(Labels)
+  x_val: validation features data
+  y_val: target validation data(Labels)
+  
+  """
+  
+  def __init__(self, datapath, headers, label_list, feature_method=("RAW", 20),\
+              normalization=False, standardization=False, test_rate=0.2, val_rate=0.2, seperator=',', savepath="./",):
+    self.datapath = datapath
+    self.savepath = savepath
+    self.data_type = self.findDataPath()
+    self.seperator = seperator
+    self.headers = headers
+    self.label_list = label_list
+    self.df = self.readData()
+    self.feature_method, self.normalization, self.standardization = feature_method, normalization, standardization
+    self.df_feature,self.df_label = self.processData(self.df.drop('label', axis=1), self.feature_method, self.normalization, self.standardization)
+    self.processData = pd.concat([self.df_label, self.df_feature], axis=1)
+    self.test_rate = test_rate
+    self.val_rate = val_rate/(1-test_rate)
+    self.x_train, self.y_train, self.x_test, self.y_test,\
+        self.x_val, self.y_val = self.splitData()   
+  
+  def findDataPath(self):
+    filename = self.datapath.split("/")[-1]
+    file_extansion = filename.split(".")[-1]
+    return file_extansion
+  def readData(self):
+    '''read data from txt, csv or json file as a dataframe'''
+    if (self.data_type == 'txt'):
+      df = pd.read_csv(self.datapath, sep=self.seperator, header= None, engine='c', error_bad_lines=False, warn_bad_lines=False)
+      df.columns = self.headers
+    elif (self.data_type == 'csv'):
+      df = pd.read_csv(self.datapath, engine='c',error_bad_lines=False, warn_bad_lines=False)
+    elif (self.data_type == 'json'):
+      df = pd.read_json(self.datapath)
+    else: 
+      return(print('Error: Datatype error - Wrong DataType input'))
+  
+    df = self.labelencode(df)
+
+    return df
+
+  def labelencode(self,df):
+    for i in range(len(self.label_list)):
+      df = df.replace({'label':self.label_list[i]},i)
+    return df
+
+  def getDataInfo(self):
+    return self.df.info()
+
+  def cleanData(self):
+    return self.df.dropna(inplace=False)
+
+  def addLabel(self, label):
+    self.df['label'] = label
+    return self.df
+  
+  
+  def getColumn(self, column_name):
+    return self.df[column_name]
+
+  def getRow(self, row_number):
+    return self.df.loc[:row_number]
+
+  
+  def saveData(self, saving_path):
+    if os.path.exists(saving_path):
+      """ Write control question for deleting file with argparse, while working on local """
+      os.remove(saving_path)
+      self.df.to_csv(saving_path, header=None, index=None, \
+                                sep=self.seperator)
+    else:
+      self.df.to_csv(saving_path, header=None, index=None, \
+          sep=self.seperator)
+  
+  def splitData(self):
+
+    x, x_test, y, y_test = train_test_split(self.df_feature, self.df_label,\
+                                            test_size=self.test_rate, train_size=(1-self.test_rate))
+    x_train, x_val, y_train, y_val = train_test_split(x, y, \
+                                            test_size = self.val_rate, train_size =(1-self.val_rate))
+
+    print("test--------------------------------------------------------")
+    print(x_train, y_train, x_test, y_test, x_val, y_val)
+    return x_train, y_train, x_test, y_test, x_val, y_val
+
+  def convertConv1D(self):
+    """
+    Keras conv1d layer input shape should be 3d. This function adjust data dimension for con1d
+    """
+    x_train = np.expand_dims(self.x_train, axis=2)
+    y_train = np.expand_dims(self.y_train, axis=1)
+
+    x_test = np.expand_dims(self.x_test, axis=2)
+    y_test = np.expand_dims(self.y_test, axis=1)
     
+    x_val = np.expand_dims(self.x_val, axis=2)
+    y_val = np.expand_dims(self.y_val, axis=1)
+
+    return x_train, y_train, x_test, y_test, x_val, y_val
+
+  def processData(self, df_feature, feature_method, normalization = False, standardization = False):
+    """
+
+    feature_method is a tuple like:
+    (method_name, windows_length)
+
+    """
+    feature_method_name = feature_method[0]
+    windows_length = feature_method[1]
+    if feature_method_name == "RAW":
+      processed_data = df_feature
+      df_label = self.df['label']
+    elif feature_method_name == "SMA":
+      processed_data = self.SMA(df_feature, windows_length)
+      df_label = self.df['label'].iloc[windows_length-1:].reset_index(drop=True)
+    elif feature_method_name == "SMV":
+      processed_data = self.SMV(df_feature, windows_length)
+      df_label = self.df['label'].iloc[windows_length-1:].reset_index(drop=True)
+    elif feature_method_name == "CMA":
+      processed_data = self.CMA(df_feature, windows_length)
+      df_label = self.df['label'].iloc[windows_length-1:].reset_index(drop=True)
+    elif feature_method_name == "CMV":
+      processed_data = self.CMV(df_feature, windows_length)
+      df_label = self.df['label'].iloc[windows_length-1:].reset_index(drop=True)
+    elif feature_method_name == "EMA":
+      processed_data = self.EMA(df_feature, windows_length)
+      df_label = self.df['label'].iloc[0:].reset_index(drop=True)
+    elif feature_method_name == "EMV":
+      processed_data = self.EMV(df_feature, windows_length)
+      df_label = self.df['label'].iloc[1:].reset_index(drop=True)
+    else:
+      print("Feature method error")
+
+    if normalization == True and standardization == True:
+      print("Normalization and Standartization can not be true at the same time")
+    else:
+      if normalization:
+        processed_data = self.Normalization(processed_data)
+      if standardization:
+        processed_data = self.Standardization(processed_data)
+
+
+    print ("process and label\n ")
+    print(processed_data)
+    print(df_label)
+    return processed_data, df_label
+
+  def SMA(self, df_feature, windows_length):
+      
     """
     Simple Moving Average
     """
     df_SMA = pd.DataFrame()
-    df_SMA[:,0] = df_feature[:,0].rolling(window=windows_length).mean() 
-    df_SMA[:,1] = df_feature[:,1].rolling(window=windows_length).mean()
-    df_SMA[:,2] = df_feature[:,2].rolling(window=windows_length).mean()
-
+    for col in df_feature.columns:
+        df_SMA[str(col)] = df_feature[str(col)].rolling(window=windows_length).mean() 
+    
+    df_SMA.dropna(inplace=True)
+    df_SMA = df_SMA.reset_index(drop=True)
     return df_SMA
 
-def SMV(df_feature, windows_length):
-    
+  def SMV(self, df_feature, windows_length):
+      
     """
     Simple Moving Variance
     """
     df_SMV = pd.DataFrame()
-    df_SMV[:,0] = df_feature[:,0].rolling(window=windows_length).var() 
-    df_SMV[:,1] = df_feature[:,1].rolling(window=windows_length).var()
-    df_SMV[:,2] = df_feature[:,2].rolling(window=windows_length).var()
+    for col in df_feature.columns:
+      if col != "label":
+        df_SMV[str(col)] = df_feature[str(col)].rolling(window=windows_length).var() 
+    
+    df_SMV.dropna(inplace=True)
+    df_SMV = df_SMV.reset_index(drop=True)
 
     return df_SMV
 
-def SMK(df_feature, windows_length):
-    
-    """
-    Simple Moving Kurtosis
-    """
 
-    df_SMK = pd.DataFrame()
-    df_SMK[:,0] = df_feature[:,0].rolling(window=windows_length).Kurtosis()
-    df_SMK[:,1] = df_feature[:,1].rolling(window=windows_length).Kurtosis()
-    df_SMK[:,2] = df_feature[:,2].rolling(window=windows_length).Kurtosis()
-
-    return df_SMK
-
-def SMS(df_feature, windows_length):
-    
-    """
-    Simple Moving Skew
-    """
-    df_SMS = pd.DataFrame()
-    df_SMS[:,0] = df_feature[:,0].rolling(window=windows_length).Skew()
-    df_SMS[:,1] = df_feature[:,1].rolling(window=windows_length).Skew()
-    df_SMS[:,2] = df_feature[:,2].rolling(window=windows_length).Skew()
-
-    return df_SMS
-    
-
-def CMA(df_feature, windows_length):
+  def CMA(self, df_feature, windows_length):
     """
     Cumulative Moving Average
     """
     df_CMA = pd.DataFrame()
-    df_CMA[:,0] = df_feature[:,0].expanding(min_periods=windows_length).mean() 
-    df_CMA[:,1] = df_feature[:,1].expanding(min_periods=windows_length).mean()
-    df_CMA[:,2] = df_feature[:,2].expanding(min_periods=windows_length).mean()
-
+    for col in df_feature.columns:
+      if col != "label":
+        df_CMA[str(col)] = df_feature[str(col)].expanding(min_periods=windows_length).mean() 
+    
+    df_CMA.dropna(inplace=True)
+    df_CMA = df_CMA.reset_index(drop=True)
     return df_CMA
     
-def CMV(df_feature, windows_length):
+
+      
+  def CMV(self, df_feature, windows_length):
     """
     Cumulative Moving Variance
     """
     df_CMV = pd.DataFrame()
-    df_CMV[:,0] = df_feature[:,0].expanding(min_periods=windows_length).var() 
-    df_CMV[:,1] = df_feature[:,1].expanding(min_periods=windows_length).var()
-    df_CMV[:,2] = df_feature[:,2].expanding(min_periods=windows_length).var()
+    for col in df_feature.columns:
+      if col != "label":
+        df_CMV[str(col)] = df_feature[str(col)].expanding(min_periods=windows_length).var() 
 
+    df_CMV.dropna(inplace=True)
+    df_CMV = df_CMV.reset_index(drop=True)
     return df_CMV
 
-def CMK(df_feature, windows_length):
-    """
-    Cumulative Moving Kurtosis
-    """
-    df_CMK = pd.DataFrame()
-    df_CMK[:,0] = df_feature[:,0].expanding(min_periods=windows_length).Kurtosis() 
-    df_CMK[:,1] = df_feature[:,1].expanding(min_periods=windows_length).Kurtosis()
-    df_CMK[:,2] = df_feature[:,2].expanding(min_periods=windows_length).Kurtosis()
 
-    return df_CMK
-
-def CMS(df_feature, windows_length):
-    """
-    Cumulative Moving Skew
-    """
-    df_CMS = pd.DataFrame()
-    df_CMS[:,0] = df_feature[:,0].expanding(min_periods=windows_length).Skew() 
-    df_CMS[:,1] = df_feature[:,1].expanding(min_periods=windows_length).Skew()
-    df_CMS[:,2] = df_feature[:,2].expanding(min_periods=windows_length).Skew()
-
-    return df_CMS
-
-
-def EMA(df_feature, windows_length):
+  def EMA(self, df_feature, windows_length):
     """
     Exponential Moving Average
     """
-    df_EMA = pd.DataFrame(windows_length)
-    df_EMA[:,0] = df_feature[:,0].ewm(span=windows_length, adjust=False).mean() 
-    df_EMA[:,1] = df_feature[:,1].ewm(span=windows_length, adjust=False).mean()
-    df_EMA[:,2] = df_feature[:,2].ewm(span=windows_length, adjust=False).mean()
-
+    df_EMA = pd.DataFrame()
+    for col in df_feature.columns:
+      if col != "label":
+        df_EMA[str(col)] = df_feature[str(col)].ewm(span=windows_length, adjust=False).mean() 
+    
+    df_EMA.dropna(inplace=True)
+    df_EMA = df_EMA.reset_index(drop=True)
     return df_EMA
 
-def EMV(df_feature, windows_length):
+      
+  def EMV(self, df_feature, windows_length):
     """
     Exponential Moving Varience
     """
-    df_EMV = pd.DataFrame(windows_length)
-    df_EMV[:,0] = df_feature[:,0].ewm(span=windows_length, adjust=False).var() 
-    df_EMV[:,1] = df_feature[:,1].ewm(span=windows_length, adjust=False).var()
-    df_EMV[:,2] = df_feature[:,2].ewm(span=windows_length, adjust=False).var()
+    df_EMV = pd.DataFrame()
+    for col in df_feature.columns:
+      if col != "label":
+        df_EMV[str(col)] = df_feature[str(col)].ewm(span=windows_length, adjust=False).var() 
 
+    df_EMV.dropna(inplace=True)
+    df_EMV = df_EMV.reset_index(drop=True)
     return df_EMV
 
-def EMK(df_feature, windows_length):
-    """
-    Exponential Moving Kurtosis
-    """
-    df_EMK = pd.DataFrame(windows_length)
-    df_EMK[:,0] = df_feature[:,0].ewm(span=windows_length, adjust=False).Kurtosis() 
-    df_EMK[:,1] = df_feature[:,1].ewm(span=windows_length, adjust=False).Kurtosis()
-    df_EMK[:,2] = df_feature[:,2].ewm(span=windows_length, adjust=False).Kurtosis()
+  def Normalization(self, df_feature):
+    return pd.DataFrame(MinMaxScaler().fit_transform(df_feature), columns = [x for x in self.headers if x != "label"])
 
-    return df_EMK
+  def Standardization(self, df_feature):
+    scaler = StandardScaler()
+    scaler.fit(df_feature)
+    return pd.DataFrame(scaler.transform(df_feature), columns = [x for x in self.headers if x != "label"])
 
-def EMS(df_feature, windows_length):
-    """
-    Exponential Moving Skew
-    """
-    df_EMS = pd.DataFrame(windows_length)
-    df_EMS[:,0] = df_feature[:,0].ewm(span=windows_length, adjust=False).Skew() 
-    df_EMS[:,1] = df_feature[:,1].ewm(span=windows_length, adjust=False).Skew()
-    df_EMS[:,2] = df_feature[:,2].ewm(span=windows_length, adjust=False).Skew()
 
-    return df_EMS
 
+
+def main(args):
+    test_rate   = args.test_rate  
+    validation_rate = args.validation_rate
+    headers = args.headers
+    label_list = args.label_list
+    feature_method = args.feature_method
+    normalization = args.normalization
+    standardization = args.standardization
+    data_file_name = args.data_file_name
+    windows_length = args.windows_length
+    
+    input_data_path = os.path.join("/opt/ml/processing/input", data_file_name)
+
+    data = Data(input_data_path, headers, label_list, (feature_method, windows_length), normalization, standardization, test_rate, validation_rate)
+
+    print (data.processed_data)
+
+
+
+if __name__ =="__main__":
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--test-rate", type=float, default=0.2)
+    parser.add_argument("--validation-rate", type=float, default=0.2)
+    parser.add_argument("--headers", type=list, default=[""])
+    parser.add_argument("--label-list", type=list, default=[""])
+    parser.add_argument("--feature-method", type=str, default=" ")
+    parser.add_argument("--windows-length", type=int, default=10)
+    parser.add_argument("--normalization", type=bool, default=False)
+    parser.add_argument("--standardization", type=bool, default=False)
+    parser.add_argument("--data-file-name", type=str, default="input_data")
+    
+    args, _ = parser.parse_known_args()
+
+
+
+    main(args)
